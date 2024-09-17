@@ -2,8 +2,8 @@ import React from "react";
 import { Box, List, Paper, Typography } from "@mui/material";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
-import useWebSocket from "../hooks/useWebSocket";
-import { Message } from "../types/chat";
+import useWebSocket from "../../hooks/useWebSocket";
+import { Message } from "../../types/chat";
 
 const ChatWindow: React.FC = () => {
   // const url = process.env.REACT_APP_WEBSOCKET_URL;
