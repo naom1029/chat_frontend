@@ -8,3 +8,4 @@ export interface ChatContextType {
   messages: Message[];
   sendMessage: (text: string) => void;
 }
+

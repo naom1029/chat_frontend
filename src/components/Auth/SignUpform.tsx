@@ -7,46 +7,79 @@ import {
   CardContent,
   Container,
   Typography,
+  Box,
+  Avatar,
+  Divider,
+  CircularProgress,
+  useTheme,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom"; // React Routerを使用する場合
-import { GitHub } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import { GitHub, ExitToApp, Chat } from "@mui/icons-material";
 
-const SignUpform: React.FC = () => {
+export default function SignUpForm() {
   const [user, setUser] = useState<User | null>(null);
-  const navigate = useNavigate(); // React Routerのnavigateを取得
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const theme = useTheme();
 
   useEffect(() => {
     const fetchSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((_, session) => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         setUser(session?.user || null);
-      });
-
-      return () => {
-        subscription.unsubscribe();
-      };
+      } catch (error) {
+        console.error("Error fetching session:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleGitHubSignIn = async () => {
-    await supabase.auth.signInWithOAuth({ provider: "github" });
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "github",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error signing in with GitHub:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null); // サインアウト時にユーザーをnullに設定
+    try {
+      setLoading(true);
+      await supabase.auth.signOut();
+      setUser(null);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const navigateToChat = () => {
-    navigate("/chat"); // チャット画面へ遷移
+    navigate("/chat");
   };
 
   return (
@@ -57,25 +90,48 @@ const SignUpform: React.FC = () => {
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100vh",
+        backgroundColor: theme.palette.background.default,
       }}
     >
-      <Card sx={{ width: "100%", maxWidth: 350 }}>
-        <CardContent>
-          <Typography variant="h5" component="div" gutterBottom>
+      <Card
+        sx={{
+          width: "100%",
+          maxWidth: 400,
+          borderRadius: 2,
+          boxShadow: theme.shadows[3],
+          backgroundColor: theme.palette.background.paper,
+        }}
+      >
+        <CardContent sx={{ p: 4 }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            align="center"
+            fontWeight="bold"
+          >
             GitHub Authentication
           </Typography>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Sign in or sign up using your GitHub account
-          </Typography>
-          {user ? (
-            <div>
-              <Typography variant="body1" gutterBottom>
-                Welcome, {user.email}
+          <Divider sx={{ my: 2 }} />
+          {loading ? (
+            <Box display="flex" justifyContent="center" my={4}>
+              <CircularProgress />
+            </Box>
+          ) : user ? (
+            <Box display="flex" flexDirection="column" alignItems="center">
+              <Avatar
+                src={user.user_metadata.avatar_url}
+                alt={user.user_metadata.full_name || user.email}
+                sx={{ width: 80, height: 80, mb: 2 }}
+              />
+              <Typography variant="h6" gutterBottom>
+                Welcome, {user.user_metadata.full_name || user.email}
               </Typography>
               <Button
                 variant="contained"
                 color="primary"
                 fullWidth
+                startIcon={<Chat />}
                 onClick={navigateToChat}
                 sx={{ mt: 2 }}
               >
@@ -83,30 +139,39 @@ const SignUpform: React.FC = () => {
               </Button>
               <Button
                 variant="outlined"
-                color="primary"
+                color="secondary"
                 fullWidth
+                startIcon={<ExitToApp />}
                 onClick={handleSignOut}
                 sx={{ mt: 2 }}
               >
                 Sign Out
               </Button>
-            </div>
+            </Box>
           ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              startIcon={<GitHub />}
-              onClick={handleGitHubSignIn}
-              sx={{ mt: 2 }}
-            >
-              Sign in with GitHub
-            </Button>
+            <Box>
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                gutterBottom
+                align="center"
+              >
+                Sign in or sign up using your GitHub account
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                startIcon={<GitHub />}
+                onClick={handleGitHubSignIn}
+                sx={{ mt: 2 }}
+              >
+                Sign in with GitHub
+              </Button>
+            </Box>
           )}
         </CardContent>
       </Card>
     </Container>
   );
-};
-
-export default SignUpform;
+}
