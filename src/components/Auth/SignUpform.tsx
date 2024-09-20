@@ -15,73 +15,41 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { GitHub, ExitToApp, Chat } from "@mui/icons-material";
+import { useUserStore } from "../../store/userStore";
 
 export default function SignUpForm() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
   const theme = useTheme();
-
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        setUser(session?.user || null);
-      } catch (error) {
-        console.error("Error fetching session:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user || null);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+  const navigate = useNavigate();
+  const { user, loading } = useUserStore();
 
   const handleGitHubSignIn = async () => {
-    try {
-      setLoading(true);
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "github",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error signing in with GitHub:", error);
-    } finally {
-      setLoading(false);
-    }
+    await supabase.auth.signInWithOAuth({
+      provider: "github",
+    });
   };
 
   const handleSignOut = async () => {
-    try {
-      setLoading(true);
-      await supabase.auth.signOut();
-      setUser(null);
-    } catch (error) {
-      console.error("Error signing out:", error);
-    } finally {
-      setLoading(false);
-    }
+    await supabase.auth.signOut();
+    useUserStore.getState().setUser(null);
   };
 
   const navigateToChat = () => {
     navigate("/chat");
   };
-
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
   return (
     <Container
       maxWidth="sm"

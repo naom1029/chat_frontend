@@ -1,12 +1,14 @@
 import React from "react";
-import { Box, List, Paper, Typography, useTheme } from "@mui/material";
+import { Avatar, Box, List, Paper, Typography, useTheme } from "@mui/material";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import useWebSocket from "../../hooks/useWebSocket";
 import { Message } from "../../types/chat";
+import { useUserStore } from "../../store/userStore";
 
 const ChatWindow: React.FC = () => {
   const theme = useTheme();
+  const { user, loading } = useUserStore();
   const url = "ws://localhost:8080/ws";
   if (!url) {
     throw new Error("WebSocket URL is not defined in .env file");
@@ -39,11 +41,23 @@ const ChatWindow: React.FC = () => {
           backgroundColor: theme.palette.primary.main,
           color: theme.palette.primary.contrastText,
           boxShadow: theme.shadows[3],
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
         }}
       >
         <Typography variant="h5" fontWeight="bold">
           Chat App
         </Typography>
+
+        {user && (
+          <Avatar
+            src={user.user_metadata.avatar_url}
+            alt={user.user_metadata.full_name || user.email}
+            sx={{ position: "absolute", right: 16 }}
+          />
+        )}
       </Box>
       <List
         sx={{

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Container, createTheme } from "@mui/material";
 import SignUpform from "./components/Auth/SignUpform";
@@ -6,6 +6,7 @@ import ChatWindow from "./components/Chat/ChatWindow";
 import PrivateRoute from "./components/Auth/PrivateRoute";
 import { ThemeProvider } from "@emotion/react";
 import AuthCallback from "./components/Auth/AuthCallback";
+import { initializeUser } from "./store/userStore";
 
 const theme = createTheme({
   palette: {
@@ -37,7 +38,12 @@ const theme = createTheme({
     },
   },
 });
+
 const App: React.FC = () => {
+  useEffect(() => {
+    initializeUser();
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <Router>
@@ -46,7 +52,6 @@ const App: React.FC = () => {
           sx={{ height: "100vh", display: "flex", flexDirection: "column" }}
         >
           <Routes>
-            {" "}
             <Route path="/" element={<SignUpform />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route
@@ -56,7 +61,7 @@ const App: React.FC = () => {
                   <ChatWindow />
                 </PrivateRoute>
               }
-            />{" "}
+            />
           </Routes>
         </Container>
       </Router>
