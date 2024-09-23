@@ -4,7 +4,7 @@ import { MessageCircle, Users } from "lucide-react";
 import MessageItem from "./MessageItem";
 import ChatInput from "./ChatInput";
 import useWebSocket from "../../hooks/useWebSocket";
-import { SendMessage } from "../../types/message";
+import { SendMessage } from "../../types/SendMessage";
 import { useUserStore } from "../../store/userStore";
 import Sidebar from "./SideBar";
 export default function ChatWindow() {
@@ -13,13 +13,13 @@ export default function ChatWindow() {
   const url = "ws://localhost:8080/ws";
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
-  const rooms = ["Server1", "Server2", "Server3", "Server4"];
+  const [rooms, setRooms] = useState<string[]>([]);
   const prevSelectedRoomRef = useRef<string | null>(null);
   if (!url) {
     throw new Error("WebSocket URL is not defined in .env file");
   }
 
-  const { messages, sendMessage } = useWebSocket(url, selectedRoom);
+  const { messages, sendMessage } = useWebSocket(url, selectedRoom, setRooms);
 
   const handleSelectRoom = (room: string) => {
     setSelectedRoom(room);
@@ -39,13 +39,21 @@ export default function ChatWindow() {
   };
 
   useEffect(() => {
-    if (selectedRoom && selectedRoom !== prevSelectedRoomRef.current) {
+    if (selectedRoom == null) {
       const initialMessage: SendMessage = {
+        type: "Command",
+        command: "list",
+        args: "",
+      };
+      sendMessage(initialMessage);
+    }
+    if (selectedRoom && selectedRoom !== prevSelectedRoomRef.current) {
+      const selectRoomMessage: SendMessage = {
         type: "Command",
         command: "join",
         args: selectedRoom,
       };
-      sendMessage(initialMessage);
+      sendMessage(selectRoomMessage);
       prevSelectedRoomRef.current = selectedRoom;
     }
   }, [selectedRoom, sendMessage]);
@@ -154,12 +162,13 @@ export default function ChatWindow() {
                   },
                 }}
               >
-                {messages.map((message, index) => (
-                  <MessageItem
-                    key={`${message.id}-${index}`}
-                    message={message}
-                  />
-                ))}
+                {messages.map((message, index) => {
+                  if (message.type === "Chat") {
+                    return <MessageItem key={message.id} message={message} />;
+                  }
+                  // RoomListMessage型の場合は何もしないか、適切な処理を追加
+                  return null;
+                })}
               </List>
               <Box sx={{ p: 2, bgcolor: "background.paper" }}>
                 <ChatInput onSendMessage={handleSendMessage} />

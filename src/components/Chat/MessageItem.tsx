@@ -1,6 +1,6 @@
 import React from "react";
 import { ListItem, ListItemText, Typography, Paper } from "@mui/material";
-import { ReceiveMessage } from "../../types/message";
+import { ReceiveMessage } from "../../types/SendMessage";
 
 export interface ChatMessageProps {
   message: ReceiveMessage;

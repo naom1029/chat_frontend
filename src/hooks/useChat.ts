@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { SendMessage } from "../types/message";
+import { SendMessage } from "../types/SendMessage";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<SendMessage[]>([

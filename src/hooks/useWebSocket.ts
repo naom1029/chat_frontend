@@ -1,8 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { ReceiveMessage, SendMessage } from "../types/message";
+import { SendMessage } from "../types/SendMessage";
+import {
+  ReceiveMessage,
+  ChatMessage,
+  RoomListMessage,
+} from "../types/recieveMessage";
 
 // カスタムフックの定義
-const useWebSocket = (url: string, room: string | null) => {
+const useWebSocket = (
+  url: string,
+  room: string | null,
+  onRoomListUpdate: (rooms: string[]) => void
+) => {
   const [messages, setMessages] = useState<ReceiveMessage[]>([]);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const socketRef = useRef<WebSocket | null>(null);
@@ -20,7 +29,21 @@ const useWebSocket = (url: string, room: string | null) => {
     // メッセージを受信したときの処理
     socketRef.current.onmessage = (event) => {
       const message: ReceiveMessage = JSON.parse(event.data);
-      setMessages((prevMessages) => [...prevMessages, message]);
+
+      // メッセージの種類に応じて処理を分岐
+      switch (message.type) {
+        case "Chat":
+          const chatMessage = message as ChatMessage;
+          setMessages((prevMessages) => [...prevMessages, chatMessage]);
+          break;
+        case "List":
+          const roomListMessage = message as RoomListMessage;
+          console.log("Received room list:", roomListMessage.rooms);
+          onRoomListUpdate(roomListMessage.rooms); // ルームリストを更新
+          break;
+        default:
+          console.warn("Unknown message type:", message);
+      }
     };
 
     // 接続が閉じられたときの処理
