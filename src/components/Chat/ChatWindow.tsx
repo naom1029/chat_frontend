@@ -1,9 +1,9 @@
 import React from "react";
 import { Avatar, Box, List, Paper, Typography, useTheme } from "@mui/material";
-import ChatMessage from "./ChatMessage";
+import MessageItem from "./MessageItem";
 import ChatInput from "./ChatInput";
 import useWebSocket from "../../hooks/useWebSocket";
-import { Message } from "../../types/chat";
+import { ChatMessage } from "../../types/message";
 import { useUserStore } from "../../store/userStore";
 
 const ChatWindow: React.FC = () => {
@@ -16,10 +16,8 @@ const ChatWindow: React.FC = () => {
   const { messages, isConnected, sendMessage } = useWebSocket(url);
 
   const handleSendMessage = (text: string) => {
-    const newMessage: Message = {
-      id: Date.now(),
+    const newMessage: ChatMessage = {
       text: text,
-      timestamp: new Date(),
     };
     sendMessage(newMessage);
   };
@@ -77,7 +75,7 @@ const ChatWindow: React.FC = () => {
         }}
       >
         {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
+          <MessageItem key={message.id} message={message} />
         ))}
       </List>
       <Box sx={{ p: 3, backgroundColor: theme.palette.background.paper }}>

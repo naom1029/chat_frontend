@@ -1,19 +1,12 @@
 import React from "react";
 import { ListItem, ListItemText, Typography, Paper } from "@mui/material";
-import { Message } from "../types/chat";
+import { ChatMessage } from "../../types/message";
 
 export interface ChatMessageProps {
-  message: Message;
+  message: ChatMessage;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
-  // message.timestamp を Date オブジェクトに変換
-  const date =
-    typeof message.timestamp === "string" ||
-    typeof message.timestamp === "number"
-      ? new Date(message.timestamp)
-      : message.timestamp;
-
+const MessageItem: React.FC<ChatMessageProps> = ({ message }) => {
   return (
     <ListItem>
       <Paper
@@ -33,9 +26,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
               <Typography component="span" variant="body2" color="text.primary">
                 {message.text}
               </Typography>
-              <Typography component="span" variant="caption" display="block">
+              {/* <Typography component="span" variant="caption" display="block">
                 {date.toLocaleTimeString()}
-              </Typography>
+              </Typography> */}
             </>
           }
         />
@@ -44,4 +37,4 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   );
 };
 
-export default ChatMessage;
+export default MessageItem;
