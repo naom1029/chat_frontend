@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { Container, createTheme } from "@mui/material";
+import { Container, createTheme, CssBaseline } from "@mui/material";
 import SignUpform from "./components/Auth/SignUpform";
 import ChatWindow from "./components/Chat/ChatWindow";
 import PrivateRoute from "./components/Auth/PrivateRoute";
@@ -45,24 +45,23 @@ const App: React.FC = () => {
   }, []);
   return (
     <ThemeProvider theme={theme}>
+      <CssBaseline /> {/* CSSリセットを適用 */}
       <Router>
-        <Container
-          maxWidth="sm"
-          sx={{ height: "100vh", display: "flex", flexDirection: "column" }}
-        >
-          <Routes>
-            {/* <Route path="/" element={<SignUpform />} /> */}
-            {/* <Route path="/auth/callback" element={<AuthCallback />} /> */}
-            <Route
-              path="/"
-              element={
-                // <PrivateRoute>
-                <ChatWindow />
-                // </PrivateRoute>
-              }
-            />
-          </Routes>
-        </Container>
+        <Routes>
+          {/* 認証関連のルート */}
+          {/* <Route path="/signup" element={<SignUpform />} /> */}
+          {/* <Route path="/auth/callback" element={<AuthCallback />} /> */}
+
+          {/* プライベートルート */}
+          <Route
+            path="/"
+            element={
+              // <PrivateRoute>
+              <ChatWindow />
+              // </PrivateRoute>
+            }
+          />
+        </Routes>
       </Router>
     </ThemeProvider>
   );

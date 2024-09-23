@@ -1,33 +1,31 @@
 import React, { useState } from "react";
-import {
-  Avatar,
-  Box,
-  Container,
-  List,
-  Paper,
-  Typography,
-  useTheme,
-} from "@mui/material";
+import { Avatar, Box, List, Paper, Typography, useTheme } from "@mui/material";
+import { MessageCircle, Users } from "lucide-react";
 import MessageItem from "./MessageItem";
 import ChatInput from "./ChatInput";
 import useWebSocket from "../../hooks/useWebSocket";
 import { SendMessage } from "../../types/message";
 import { useUserStore } from "../../store/userStore";
 import Sidebar from "./SideBar";
-
-const ChatWindow: React.FC = () => {
+export default function ChatWindow() {
   const theme = useTheme();
-  const { user, loading } = useUserStore();
+  const { user } = useUserStore();
   const url = "ws://localhost:8080/ws";
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const rooms = ["Server1", "Server2", "Server3", "Server4"];
+
   const handleSelectRoom = (room: string) => {
     setSelectedRoom(room);
+  };
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
   };
   if (!url) {
     throw new Error("WebSocket URL is not defined in .env file");
   }
-  const { messages, isConnected, sendMessage } = useWebSocket(url);
+
+  const { messages, sendMessage } = useWebSocket(url);
 
   const handleSendMessage = (text: string) => {
     const newMessage: SendMessage = {
@@ -37,66 +35,107 @@ const ChatWindow: React.FC = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", height: "100vh" }}>
-      <Sidebar rooms={rooms} onSelectRoom={handleSelectRoom} />
-      <Container
-        maxWidth="sm"
-        sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}
+    <Box
+      sx={{
+        display: "flex",
+        width: "100%",
+        height: "100vh",
+        bgcolor: "background.default",
+        overflow: "hidden",
+        m: 0,
+        p: 0,
+      }}
+    >
+      <Sidebar
+        rooms={rooms}
+        onSelectRoom={handleSelectRoom}
+        isCollapsed={isSidebarCollapsed}
+        toggleCollapse={toggleSidebar}
+        sx={{
+          [`& .MuiDrawer-paper`]: {
+            transition: theme.transitions.create(["width"], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.standard,
+            }),
+          },
+        }}
+      />
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flexGrow: 1,
+          height: "100%",
+        }}
       >
-        {!selectedRoom ? (
-          <Typography variant="h6" sx={{ p: 2 }}>
-            Please select a chat room
-          </Typography>
-        ) : (
-          <>
-            <Paper
-              elevation={0}
+        <Paper
+          elevation={0}
+          sx={{
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            borderRadius: 0,
+            overflow: "hidden",
+          }}
+        >
+          {/* ヘッダー */}
+          <Box
+            sx={{
+              p: 2,
+              bgcolor: "primary.main",
+              color: "primary.contrastText",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <MessageCircle size={24} />
+              <Typography variant="h6" fontWeight="bold">
+                {selectedRoom || "Chat App"}
+              </Typography>
+            </Box>
+            {user && (
+              <Avatar
+                src={user.user_metadata.avatar_url}
+                alt={user.user_metadata.full_name || user.email}
+              />
+            )}
+          </Box>
+
+          {/* ルーム未選択時の表示 */}
+          {!selectedRoom ? (
+            <Box
               sx={{
-                height: "100vh",
                 display: "flex",
                 flexDirection: "column",
-                backgroundColor: theme.palette.background.default,
-                borderRadius: 0,
+                alignItems: "center",
+                justifyContent: "center",
+                flexGrow: 1,
+                p: 2,
               }}
             >
-              <Box
-                sx={{
-                  p: 3,
-                  backgroundColor: theme.palette.primary.main,
-                  color: theme.palette.primary.contrastText,
-                  boxShadow: theme.shadows[3],
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  position: "relative",
-                }}
-              >
-                <Typography variant="h5" fontWeight="bold">
-                  Chat App
-                </Typography>
-
-                {user && (
-                  <Avatar
-                    src={user.user_metadata.avatar_url}
-                    alt={user.user_metadata.full_name || user.email}
-                    sx={{ position: "absolute", right: 16 }}
-                  />
-                )}
-              </Box>
+              <Users size={48} color={theme.palette.text.secondary} />
+              <Typography variant="h6" color="text.secondary" sx={{ mt: 2 }}>
+                Please select a chat room
+              </Typography>
+            </Box>
+          ) : (
+            <>
               <List
                 sx={{
                   flexGrow: 1,
-                  overflow: "auto",
-                  p: 3,
+                  overflowY: "auto",
+                  p: 2,
                   "&::-webkit-scrollbar": {
                     width: "0.4em",
                   },
                   "&::-webkit-scrollbar-track": {
-                    boxShadow: "inset 0 0 6px rgba(0,0,0,0.00)",
+                    bgcolor: "background.paper",
                   },
                   "&::-webkit-scrollbar-thumb": {
-                    backgroundColor: "rgba(0,0,0,.1)",
-                    outline: "1px solid slategrey",
+                    bgcolor: "primary.light",
+                    borderRadius: "4px",
                   },
                 }}
               >
@@ -104,17 +143,13 @@ const ChatWindow: React.FC = () => {
                   <MessageItem key={message.id} message={message} />
                 ))}
               </List>
-              <Box
-                sx={{ p: 3, backgroundColor: theme.palette.background.paper }}
-              >
+              <Box sx={{ p: 2, bgcolor: "background.paper" }}>
                 <ChatInput onSendMessage={handleSendMessage} />
               </Box>
-            </Paper>
-          </>
-        )}
-      </Container>
+            </>
+          )}
+        </Paper>
+      </Box>
     </Box>
   );
-};
-
-export default ChatWindow;
+}
