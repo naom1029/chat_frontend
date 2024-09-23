@@ -43,7 +43,6 @@ const App: React.FC = () => {
   useEffect(() => {
     initializeUser();
   }, []);
-
   return (
     <ThemeProvider theme={theme}>
       <Router>
@@ -52,14 +51,14 @@ const App: React.FC = () => {
           sx={{ height: "100vh", display: "flex", flexDirection: "column" }}
         >
           <Routes>
-            <Route path="/" element={<SignUpform />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
+            {/* <Route path="/" element={<SignUpform />} /> */}
+            {/* <Route path="/auth/callback" element={<AuthCallback />} /> */}
             <Route
-              path="/chat"
+              path="/"
               element={
-                <PrivateRoute>
-                  <ChatWindow />
-                </PrivateRoute>
+                // <PrivateRoute>
+                <ChatWindow />
+                // </PrivateRoute>
               }
             />
           </Routes>

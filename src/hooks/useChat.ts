@@ -1,13 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { Message } from "../types/chat";
+import { SendMessage } from "../types/message";
 
 export const useChat = () => {
-  const [messages, setMessages] = useState<Message[]>([
+  const [messages, setMessages] = useState<SendMessage[]>([
     {
-      id: 1,
       text: "Welcome to the chat app!",
-      sender: "System",
-      timestamp: new Date(),
     },
   ]);
 
@@ -23,11 +20,8 @@ export const useChat = () => {
   }, [messages]);
 
   const sendMessage = useCallback((text: string, sender: string) => {
-    const newMessage: Message = {
-      id: Date.now(),
+    const newMessage: SendMessage = {
       text,
-      sender,
-      timestamp: new Date(),
     };
 
     setMessages((prevMessages) => [...prevMessages, newMessage]);
