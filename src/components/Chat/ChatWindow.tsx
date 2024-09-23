@@ -154,8 +154,11 @@ export default function ChatWindow() {
                   },
                 }}
               >
-                {messages.map((message) => (
-                  <MessageItem key={message.id} message={message} />
+                {messages.map((message, index) => (
+                  <MessageItem
+                    key={`${message.id}-${index}`}
+                    message={message}
+                  />
                 ))}
               </List>
               <Box sx={{ p: 2, bgcolor: "background.paper" }}>
