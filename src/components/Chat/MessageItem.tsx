@@ -1,9 +1,9 @@
 import React from "react";
 import { ListItem, ListItemText, Typography, Paper } from "@mui/material";
-import { SendMessage } from "../../types/message";
+import { ReceiveMessage } from "../../types/message";
 
 export interface ChatMessageProps {
-  message: SendMessage;
+  message: ReceiveMessage;
 }
 
 const MessageItem: React.FC<ChatMessageProps> = ({ message }) => {

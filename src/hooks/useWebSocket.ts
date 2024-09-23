@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Message } from "../types/chat";
+import { ReceiveMessage, SendMessage } from "../types/message";
 
 // カスタムフックの定義
-const useWebSocket = (url: string) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+const useWebSocket = (url: string, room: string | null) => {
+  const [messages, setMessages] = useState<ReceiveMessage[]>([]);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const socketRef = useRef<WebSocket | null>(null);
 
@@ -19,7 +19,7 @@ const useWebSocket = (url: string) => {
 
     // メッセージを受信したときの処理
     socketRef.current.onmessage = (event) => {
-      const message: Message = JSON.parse(event.data);
+      const message: ReceiveMessage = JSON.parse(event.data);
       setMessages((prevMessages) => [...prevMessages, message]);
     };
 
@@ -34,10 +34,14 @@ const useWebSocket = (url: string) => {
       socketRef.current?.close();
     };
   }, [url]);
+  useEffect(() => {
+    setMessages([]);
+  }, [room]);
 
   // メッセージを送信する関数
-  const sendMessage = (message: Message) => {
+  const sendMessage = (message: SendMessage) => {
     if (socketRef.current && isConnected) {
+      console.log(JSON.stringify(message));
       socketRef.current.send(JSON.stringify(message));
     }
   };

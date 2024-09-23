@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Avatar, Box, List, Paper, Typography, useTheme } from "@mui/material";
 import { MessageCircle, Users } from "lucide-react";
 import MessageItem from "./MessageItem";
@@ -14,6 +14,12 @@ export default function ChatWindow() {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const rooms = ["Server1", "Server2", "Server3", "Server4"];
+  const prevSelectedRoomRef = useRef<string | null>(null);
+  if (!url) {
+    throw new Error("WebSocket URL is not defined in .env file");
+  }
+
+  const { messages, sendMessage } = useWebSocket(url, selectedRoom);
 
   const handleSelectRoom = (room: string) => {
     setSelectedRoom(room);
@@ -21,19 +27,28 @@ export default function ChatWindow() {
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
-  if (!url) {
-    throw new Error("WebSocket URL is not defined in .env file");
-  }
-
-  const { messages, sendMessage } = useWebSocket(url);
 
   const handleSendMessage = (text: string) => {
-    const newMessage: SendMessage = {
-      text: text,
-    };
-    sendMessage(newMessage);
+    if (selectedRoom) {
+      const newMessage: SendMessage = {
+        type: "Chat",
+        text: text,
+      };
+      sendMessage(newMessage);
+    }
   };
 
+  useEffect(() => {
+    if (selectedRoom && selectedRoom !== prevSelectedRoomRef.current) {
+      const initialMessage: SendMessage = {
+        type: "Command",
+        command: "join",
+        args: selectedRoom,
+      };
+      sendMessage(initialMessage);
+      prevSelectedRoomRef.current = selectedRoom;
+    }
+  }, [selectedRoom, sendMessage]);
   return (
     <Box
       sx={{
